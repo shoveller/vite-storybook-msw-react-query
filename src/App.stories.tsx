@@ -16,13 +16,14 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
+const worker = getWorker();
+
 export const 기본적인_사용법: Story = {
     parameters: {
         controls: {expanded: true},
     },
     args: {},
     decorators: [(Story,props) => {
-        const worker = getWorker();
         worker.use(
             rest.get('https://pokeapi.co/api/v2/pokemon', (_, res, ctx) => {
                 return res(
