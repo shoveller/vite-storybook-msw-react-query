@@ -21,7 +21,8 @@ const App: FC<Partial<AppType>> = () => {
 
   return (
     <>
-        {data.length}
+      <p>페이지 번호: {page}</p>
+      <p>레코드 갯수 :{data.length}</p>
     </>
   )
 }
