@@ -7,12 +7,16 @@ type AppType = {
   page: number
 }
 
+type DataType = {
+    name: string
+}
+
 const App: FC<Partial<AppType>> = () => {
-  const [params] = useSearchParams()
+  const [params, setParams] = useSearchParams()
   const page = params.get('page') || '0'
   const { data, isLoading } = useQuery({
     queryKey: ['poke', page],
-    queryFn: () => fetch(`https://pokeapi.co/api/v2/pokemon?limit=100000&offset=${page}}`).then(res => res.json()).then(data => data.results)
+    queryFn: () => fetch(`https://pokeapi.co/api/v2/pokemon?limit=5&offset=${page}}`).then(res => res.json()).then<DataType[]>(data => data.results)
   })
 
   if (isLoading) {
@@ -22,7 +26,15 @@ const App: FC<Partial<AppType>> = () => {
   return (
     <>
       <p>페이지 번호: {page}</p>
-      <p>레코드 갯수 :{data.length}</p>
+      <ul>
+          {
+              data?.map(item => {
+                  return <li>{item.name}</li>
+              })
+          }
+      </ul>
+      <button onClick={() => setParams({ page: `${Number(page) - 1}` })}>이전 페이지</button>
+      <button onClick={() => setParams({ page: `${Number(page) + 1}` })}>다음 페이지</button>
     </>
   )
 }
