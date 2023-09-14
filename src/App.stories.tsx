@@ -1,14 +1,15 @@
 import type {Meta, StoryObj} from '@storybook/react';
 import { rest } from 'msw'
 
-import src from './App.tsx';
+import App from './App.tsx';
 import {MemoryRouter, Route, Routes} from "react-router-dom";
 import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 import {getWorker} from "msw-storybook-addon";
+import {ComponentProps} from "react";
 
-const meta: Meta<typeof src> = {
+const meta: Meta<typeof App> = {
     title: 'App',
-    component: src,
+    component: App,
     argTypes: {},
 };
 
@@ -16,29 +17,56 @@ export default meta;
 
 type Story = StoryObj<typeof meta>;
 
-const worker = getWorker();
+const getApi = (props: ComponentProps<typeof App>) => {
+    const worker = getWorker();
+    worker.use(
+        rest.get('https://pokeapi.co/api/v2/pokemon', (_, res, ctx) => {
+            return res(
+                ctx.json({
+                    results: Array.from({ length: 5 }).map(() => {
+                        return {
+                            name: Math.floor(Math.random() * 1000000)
+                        }
+                    })
+                })
+            )
+        })
+    )
+}
 
-export const 기본적인_사용법: Story = {
+export const 국문표시: Story = {
     parameters: {
         controls: {expanded: true},
     },
     args: {},
-    decorators: [(Story,props) => {
-        worker.use(
-            rest.get('https://pokeapi.co/api/v2/pokemon', (_, res, ctx) => {
-                return res(
-                    ctx.json({
-                        results: Array.from({ length: props.args.page || 0 }).fill(undefined)
-                    })
-                )
-            })
-        )
+    decorators: [(Story,ctx) => {
+        getApi(ctx.args)
 
         return (
             <QueryClientProvider client={new QueryClient()}>
-                <MemoryRouter initialEntries={['/?page=5']}>
+                <MemoryRouter initialEntries={['/en?page=5']}>
                     <Routes>
-                        <Route path="/" element={<Story key={props.args.page} />}/>
+                        <Route path="/en" element={<Story key={JSON.stringify(ctx.args)} />}/>
+                    </Routes>
+                </MemoryRouter>
+            </QueryClientProvider>
+        )
+    }]
+};
+
+export const 영문표시: Story = {
+    parameters: {
+        controls: {expanded: true},
+    },
+    args: {},
+    decorators: [(Story,ctx) => {
+        getApi(ctx.args)
+
+        return (
+            <QueryClientProvider client={new QueryClient()}>
+                <MemoryRouter initialEntries={['/ko?page=5']}>
+                    <Routes>
+                        <Route path="/:lang" element={<Story key={JSON.stringify(ctx.args)} />}/>
                     </Routes>
                 </MemoryRouter>
             </QueryClientProvider>

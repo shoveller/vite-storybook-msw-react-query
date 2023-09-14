@@ -8,8 +8,8 @@ import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
 const router = createBrowserRouter(
     createRoutesFromElements(
         <>
-            <Route index path="/en/global" element={<App/>}/>
-            <Route path="*" element={<Navigate to="/en/global" />} />
+            <Route index path="/:lang" element={<App/>}/>
+            <Route path="*" element={<Navigate to="/:lang" />} />
         </>
     )
 )
