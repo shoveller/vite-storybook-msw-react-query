@@ -3,7 +3,7 @@ import { rest } from 'msw'
 
 import App from './App.tsx';
 import {MemoryRouter, Route, Routes} from "react-router-dom";
-import {QueryClient, QueryClientProvider} from "@tanstack/react-query";
+import {QueryClient, QueryClientProvider, useQueryClient} from "@tanstack/react-query";
 import {getWorker} from "msw-storybook-addon";
 import {ComponentProps} from "react";
 
@@ -19,8 +19,8 @@ type Story = StoryObj<typeof meta>;
 
 const getApi = (props: ComponentProps<typeof App>) => {
     const worker = getWorker();
-    worker.use(
-        rest.get('https://pokeapi.co/api/v2/pokemon', (_, res, ctx) => {
+    worker.resetHandlers(
+        rest.get(`https://pokeapi.co/api/v2/pokemon?limit=5&offset=${props.page}`, (_, res, ctx) => {
             return res(
                 ctx.json({
                     results: Array.from({ length: 5 }).map(() => {
@@ -41,12 +41,14 @@ export const 국문표시: Story = {
     args: {},
     decorators: [(Story,ctx) => {
         getApi(ctx.args)
+        const client = useQueryClient();
+        client.invalidateQueries();
 
         return (
             <QueryClientProvider client={new QueryClient()}>
                 <MemoryRouter initialEntries={['/en?page=5']}>
                     <Routes>
-                        <Route path="/en" element={<Story key={JSON.stringify(ctx.args)} />}/>
+                        <Route path="/en" element={<Story />}/>
                     </Routes>
                 </MemoryRouter>
             </QueryClientProvider>
